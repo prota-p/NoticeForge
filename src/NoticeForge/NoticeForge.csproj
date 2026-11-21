@@ -17,7 +17,7 @@
   <PropertyGroup>
     <PackageId>NoticeForge</PackageId>
     <Version>0.1.0-alpha.1</Version>
-    <Authors>Prota</Authors>
+    <Authors>prota-p</Authors>
     <Description>Generates a third-party notices file from a .NET publish folder, using the original license texts, and fails the build on unknown or disallowed licenses.</Description>
     <PackageTags>license;licenses;third-party-notices;notices;compliance;spdx;nuget;dotnet-tool;ci</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

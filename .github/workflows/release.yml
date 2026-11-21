@@ -17,6 +17,9 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # The nuget.org Trusted Publishing policy requires this environment, and the environment only accepts main.
+    # So a workflow edited on another branch can't publish; only what was reviewed and merged into main can.
+    environment: nuget
     permissions:
       contents: write   # tag and GitHub Release
       id-token: write   # NuGet Trusted Publishing (OIDC)
@@ -69,6 +72,26 @@ jobs:
       - name: Pack
         if: steps.version.outputs.publish == 'true'
         run: dotnet pack src/NoticeForge -c Release --no-build -o out
+
+      - name: Smoke test the package
+        if: steps.version.outputs.publish == 'true'
+        run: |
+          dotnet tool install NoticeForge --tool-path "$RUNNER_TEMP/tool" --add-source out --version "$VERSION"
+          "$RUNNER_TEMP/tool/noticeforge" check -c noticeforge.json
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Show package contents
+        if: steps.version.outputs.publish == 'true'
+        run: |
+          {
+            echo '### Package contents'
+            echo '```'
+            unzip -l out/*.nupkg
+            unzip -p out/*.nupkg '*.nuspec'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: NuGet login (Trusted Publishing)
         if: steps.version.outputs.publish == 'true'
