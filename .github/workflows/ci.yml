@@ -41,3 +41,23 @@ jobs:
 
       - name: Pack
         run: dotnet pack src/NoticeForge -c Release --no-build -o out
+
+      # Install the package exactly as users will, and run it, so a broken package never reaches nuget.org
+      - name: Smoke test the package
+        run: |
+          version=$(dotnet msbuild src/NoticeForge -getProperty:Version)
+          dotnet tool install NoticeForge --tool-path "$RUNNER_TEMP/tool" --add-source out --version "$version"
+          "$RUNNER_TEMP/tool/noticeforge" check -c noticeforge.json
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      # Shown on the run's summary page, for the reviewer to see what would be published
+      - name: Show package contents
+        run: |
+          {
+            echo '### Package contents'
+            echo '```'
+            unzip -l out/*.nupkg
+            unzip -p out/*.nupkg '*.nuspec'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

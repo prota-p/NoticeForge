@@ -46,4 +46,24 @@ Put example outputs under `artifacts/examples/<target>/` (ignored by git; a plac
 One line in English saying what changed.
 
 main is protected: changes go in only through a pull request approved by the maintainer, after CI (`ci.yml`) passes. Push to a branch and open a PR; never push to main.
-Merging to main runs `release.yml`. It publishes to nuget.org only when `<Version>` in `src/NoticeForge/NoticeForge.csproj` is not there yet, so a release is a PR that raises the version. Versions on nuget.org can't be deleted, so raise the version only when you mean to release.
+Merging to main runs `release.yml`. It publishes to nuget.org only when `<Version>` in `src/NoticeForge/NoticeForge.csproj` is not there yet, so a release is a PR that raises the version. Versions on nuget.org can't be deleted or replaced (only unlisted or deprecated), so raise the version only when you mean to release.
+
+## Versioning
+
+SemVer. The version in the csproj becomes the nuget.org version, the `v<version>` tag, and the GitHub Release.
+
+| Stage | Version |
+|---|---|
+| Trying it out, until it runs in CodePromptus's CI | `0.1.0-alpha.N` (users need `--prerelease`) |
+| Running in CodePromptus's CI | `0.1.0`, then `0.x.y` |
+| Used to ship RealtimeDebugger, config format settled | `1.0.0` |
+
+A breaking change is one that makes a user's CI fail or behave differently without any change on their side.
+
+| Raise | When | Examples |
+|---|---|---|
+| MAJOR (from 1.0) | Breaking | Renaming or removing a `noticeforge.json` key, a command, or an option; changing what an exit code means; renaming or removing a field in the JSON report |
+| MINOR | New features, or **stricter checks** | A new option or config key; a new kind of NG (a user's CI can newly fail, so never a PATCH) |
+| PATCH | Fixes only | Fixing a wrong NG; fixing a message |
+
+Before 1.0, breaking changes raise MINOR (SemVer allows this), but say "breaking" in the PR title so it shows in the release notes.
