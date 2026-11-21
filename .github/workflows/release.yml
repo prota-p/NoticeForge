@@ -1,0 +1,94 @@
+# Runs when a PR is merged to main. If the <Version> in src/NoticeForge/NoticeForge.csproj is not on nuget.org yet,
+# publishes it (NuGet Trusted Publishing, no stored API key), then tags v<version> and creates a GitHub Release.
+# A merge that doesn't raise the version releases nothing.
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # tag and GitHub Release
+      id-token: write   # NuGet Trusted Publishing (OIDC)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Is this version already on nuget.org?
+        id: version
+        run: |
+          version=$(dotnet msbuild src/NoticeForge -getProperty:Version)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          lower=$(echo "$version" | tr '[:upper:]' '[:lower:]')
+          if curl -fsS https://api.nuget.org/v3-flatcontainer/noticeforge/index.json | grep -q "\"$lower\""; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "$version is already on nuget.org; nothing to release."
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "Releasing $version."
+          fi
+
+      - name: Build
+        if: steps.version.outputs.publish == 'true'
+        run: dotnet build -c Release
+
+      - name: Test
+        if: steps.version.outputs.publish == 'true'
+        run: dotnet run --project tests/NoticeForge.Tests -c Release --no-build
+        env:
+          TESTINGPLATFORM_TELEMETRY_OPTOUT: 1
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: steps.version.outputs.publish == 'true'
+        with:
+          path: ~/.local/share/NoticeForge/cache
+          key: noticeforge-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: noticeforge-
+
+      - name: Check licenses of our own dependencies
+        if: steps.version.outputs.publish == 'true'
+        run: dotnet run --project src/NoticeForge -c Release --no-build -- check -c noticeforge.json
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Pack
+        if: steps.version.outputs.publish == 'true'
+        run: dotnet pack src/NoticeForge -c Release --no-build -o out
+
+      - name: NuGet login (Trusted Publishing)
+        if: steps.version.outputs.publish == 'true'
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: prota-p
+
+      - name: Push to nuget.org
+        if: steps.version.outputs.publish == 'true'
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: dotnet nuget push "out/*.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
+
+      - name: Tag and GitHub Release
+        if: steps.version.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          prerelease=""
+          case "$VERSION" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "v$VERSION" out/*.nupkg --target "$GITHUB_SHA" --title "v$VERSION" --generate-notes $prerelease

@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>NoticeForge</RootNamespace>
+
+    <!-- Shipped as a dotnet tool. It only runs in CI, so roll forward to newer major runtimes -->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>noticeforge</ToolCommandName>
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+
+  <!-- Package metadata. The version is raised in a PR; merging it to main releases that version (.github/workflows/release.yml) -->
+  <PropertyGroup>
+    <PackageId>NoticeForge</PackageId>
+    <Version>0.1.0-alpha.1</Version>
+    <Authors>Prota</Authors>
+    <Description>Generates a third-party notices file from a .NET publish folder, using the original license texts, and fails the build on unknown or disallowed licenses.</Description>
+    <PackageTags>license;licenses;third-party-notices;notices;compliance;spdx;nuget;dotnet-tool;ci</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/prota-p/NoticeForge</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/prota-p/NoticeForge</RepositoryUrl>
+    <!-- Record the repository and commit in the nuspec (what NoticeForge itself reads from other packages) -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../LICENSE" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>

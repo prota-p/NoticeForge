@@ -1,0 +1,6 @@
+{
+  // NoticeForge's own config. The tool has no NuGet dependencies, so only check runs (tests and build tools)
+  "packages": {
+    "Microsoft.Testing.*": { "reviewed": "The repository root has LICENSE (MIT) and LICENSE.PLATFORMTOOLS.txt. The latter is for other extensions listed at aka.ms/testingplatform/extensions; these packages are MIT as their nuspec declares" }
+  }
+}

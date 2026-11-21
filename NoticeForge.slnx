@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NoticeForge/NoticeForge.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NoticeForge.Tests/NoticeForge.Tests.csproj" />
+  </Folder>
+</Solution>

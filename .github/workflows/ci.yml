@@ -1,0 +1,43 @@
+# Runs on every pull request: build, test, check NoticeForge's own dependencies, and pack.
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: dotnet build -c Release
+
+      - name: Test
+        run: dotnet run --project tests/NoticeForge.Tests -c Release --no-build
+        env:
+          TESTINGPLATFORM_TELEMETRY_OPTOUT: 1
+
+      # Texts fetched from GitHub are pinned to a commit, so the cache never goes stale
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.local/share/NoticeForge/cache
+          key: noticeforge-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: noticeforge-
+
+      - name: Check licenses of our own dependencies
+        run: dotnet run --project src/NoticeForge -c Release --no-build -- check -c noticeforge.json
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Pack
+        run: dotnet pack src/NoticeForge -c Release --no-build -o out
