@@ -17,6 +17,9 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # The nuget.org Trusted Publishing policy requires this environment, and the environment only accepts main.
+    # So a workflow edited on another branch can't publish; only what was reviewed and merged into main can.
+    environment: nuget
     permissions:
       contents: write   # tag and GitHub Release
       id-token: write   # NuGet Trusted Publishing (OIDC)

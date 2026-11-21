@@ -41,6 +41,9 @@ dotnet run --project src/NoticeForge --no-build -- check      # checks NoticeFor
 
 Put example outputs under `artifacts/examples/<target>/` (ignored by git; a place for humans to look). Reports go to `check-report.txt/.json` and `notices-report.txt/.json`; config drafts to `ThirdPartyLicenses/noticeforge.json` and `ThirdPartyLicenses/licenses/`.
 
-## Commits
+## Commits and releases
 
 One line in English saying what changed.
+
+main is protected: changes go in only through a pull request approved by the maintainer, after CI (`ci.yml`) passes. Push to a branch and open a PR; never push to main.
+Merging to main runs `release.yml`. It publishes to nuget.org only when `<Version>` in `src/NoticeForge/NoticeForge.csproj` is not there yet, so a release is a PR that raises the version. Versions on nuget.org can't be deleted, so raise the version only when you mean to release.
