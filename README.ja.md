@@ -26,7 +26,7 @@ check と notices の両方が通らないとリリースしない。止まっ�
 
 ```sh
 dotnet new tool-manifest                          # まだ無ければ（dotnet-tools.json。SDK 10 より前は .config/ の下）
-dotnet tool install NoticeForge --prerelease      # 版がマニフェストに固定される。CI では dotnet tool restore
+dotnet tool install NoticeForge                   # 版がマニフェストに固定される。CI では dotnet tool restore
 dotnet tool run noticeforge check
 ```
 

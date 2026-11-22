@@ -16,7 +16,7 @@
   <!-- Package metadata. The version is raised in a PR; merging it to main releases that version (.github/workflows/release.yml) -->
   <PropertyGroup>
     <PackageId>NoticeForge</PackageId>
-    <Version>0.1.0-alpha.1</Version>
+    <Version>0.1.0</Version>
     <Authors>prota-p</Authors>
     <Description>Generates a third-party notices file from a .NET publish folder, using the original license texts, and fails the build on unknown or disallowed licenses.</Description>
     <PackageTags>license;licenses;third-party-notices;notices;compliance;spdx;nuget;dotnet-tool;ci</PackageTags>

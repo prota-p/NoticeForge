@@ -26,7 +26,7 @@ Don't release unless both `check` and `notices` pass. When one stops, a human fi
 
 ```sh
 dotnet new tool-manifest                          # if you don't have one yet (dotnet-tools.json; .config/ with SDKs before 10)
-dotnet tool install NoticeForge --prerelease      # pins the version in the manifest; in CI, run dotnet tool restore
+dotnet tool install NoticeForge                   # pins the version in the manifest; in CI, run dotnet tool restore
 dotnet tool run noticeforge check
 ```
 
