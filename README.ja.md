@@ -25,7 +25,7 @@ check と notices の両方が通らないとリリースしない。止まっ�
 ## 入れ方
 
 ```sh
-dotnet new tool-manifest                          # まだ無ければ（.config/dotnet-tools.json）
+dotnet new tool-manifest                          # まだ無ければ（dotnet-tools.json。SDK 10 より前は .config/ の下）
 dotnet tool install NoticeForge --prerelease      # 版がマニフェストに固定される。CI では dotnet tool restore
 dotnet tool run noticeforge check
 ```
@@ -48,6 +48,8 @@ noticeforge notices publish -c noticeforge.json       # publish/THIRD-PARTY-NOTI
 dotnet publish App/App.csproj -c Release -r win-x64 -p:PublishSingleFile=true -o publish
 noticeforge notices App/obj/Release/net10.0/win-x64/App.deps.json -c noticeforge.json -o publish/THIRD-PARTY-NOTICES.txt
 ```
+
+lock を locked mode（`RestoreLockedMode`）で使うとき、`-p:PublishSingleFile=true` は `Microsoft.NET.ILLink.Tasks` の参照を足す。普通の restore で作った lock にはないので、publish が NU1004 で落ちる。アプリの csproj に `<EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>` を書いて参照を常に入れ、`-p:PublishSingleFile=true` は今までどおりコマンドで渡す。csproj に `<PublishSingleFile>` は書かない。SDK がビルドするマシン自身の RID を足すので、その RID が `RuntimeIdentifiers` にないマシン（GitHub の macos-latest の osx-arm64 など）で restore が NU1004（「runtime identifiers have changed」）で落ちる。
 
 | | 入力 | 出力 |
 |---|---|---|
