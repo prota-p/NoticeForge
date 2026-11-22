@@ -25,8 +25,8 @@ Don't release unless both `check` and `notices` pass. When one stops, a human fi
 ## Install
 
 ```sh
-dotnet new tool-manifest                          # if you don't have one yet (.config/dotnet-tools.json)
-dotnet tool install NoticeForge --prerelease      # pins the version in the manifest; in CI, run dotnet tool restore
+dotnet new tool-manifest                          # if you don't have one yet (dotnet-tools.json; .config/ with SDKs before 10)
+dotnet tool install NoticeForge                   # pins the version in the manifest; in CI, run dotnet tool restore
 dotnet tool run noticeforge check
 ```
 
@@ -48,6 +48,8 @@ noticeforge notices publish -c noticeforge.json       # writes publish/THIRD-PAR
 dotnet publish App/App.csproj -c Release -r win-x64 -p:PublishSingleFile=true -o publish
 noticeforge notices App/obj/Release/net10.0/win-x64/App.deps.json -c noticeforge.json -o publish/THIRD-PARTY-NOTICES.txt
 ```
+
+With a lock file in locked mode (`RestoreLockedMode`), `-p:PublishSingleFile=true` adds a reference to `Microsoft.NET.ILLink.Tasks` that a plain restore didn't put in the lock, and the publish fails with NU1004. Put `<EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>` in the app's csproj so the reference is always there, and keep passing `-p:PublishSingleFile=true` on the command line. Don't set `<PublishSingleFile>` in the csproj: the SDK then adds the building machine's own RID, and on a machine whose RID isn't in `RuntimeIdentifiers` (e.g. osx-arm64 on GitHub's macos-latest) restore fails with NU1004 ("runtime identifiers have changed").
 
 | | Input | Output |
 |---|---|---|
